@@ -1,5 +1,14 @@
 package com.advpro.profiling.tutorial.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.advpro.profiling.tutorial.model.Course;
 import com.advpro.profiling.tutorial.model.Student;
 import com.advpro.profiling.tutorial.model.StudentCourse;
@@ -7,13 +16,6 @@ import com.advpro.profiling.tutorial.repository.CourseRepository;
 import com.advpro.profiling.tutorial.repository.StudentCourseRepository;
 import com.advpro.profiling.tutorial.repository.StudentRepository;
 import com.github.javafaker.Faker;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * @author muhammad.khadafi
@@ -33,6 +35,7 @@ public class DataSeedService {
 
     public void seedStudent() {
         Faker faker = new Faker(new Locale("in-ID"));
+        List<Student> students = new ArrayList<>();
 
         for (int i = 0; i < NUMBER_OF_STUDENTS; i++) {
             Student student = new Student();
@@ -41,8 +44,10 @@ public class DataSeedService {
             student.setFaculty(faker.educator().course());
             student.setGpa(faker.number().randomDouble(2, 2, 4));
 
-            studentRepository.save(student);
+            students.add(student);
         }
+
+        studentRepository.saveAll(students);
     }
 
     public void seedCourse() {
@@ -61,6 +66,8 @@ public class DataSeedService {
         List<Student> students = studentRepository.findAll();
         List<Course> courses = courseRepository.findAll();
 
+        List<StudentCourse> studentCoursesToSave = new ArrayList<>();
+
         for (Student student : students) {
             List<Course> selectedCourses = new Random().ints(0, courses.size())
                     .distinct()
@@ -70,10 +77,11 @@ public class DataSeedService {
 
             for (Course course : selectedCourses) {
                 StudentCourse studentCourse = new StudentCourse(student, course);
-                studentCourseRepository.save(studentCourse);
+                studentCoursesToSave.add(studentCourse);
             }
         }
 
+        studentCourseRepository.saveAll(studentCoursesToSave);
     }
 
 }
